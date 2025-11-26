@@ -1,1 +1,16 @@
 project_id = "hequmdteyctefcjwckhv"
+
+[functions.auth]
+verify_jwt = false
+
+[functions.jobs]
+verify_jwt = false
+
+[functions.applications]
+verify_jwt = false
+
+[functions.resume-analysis]
+verify_jwt = false
+
+[functions.voice-transcription]
+verify_jwt = false
