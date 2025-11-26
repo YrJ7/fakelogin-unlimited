@@ -6,12 +6,13 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { api } from "@/services/api";
 
-const Login = () => {
+const CandidateLogin = () => {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [isRegistering, setIsRegistering] = useState(false);
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!email || !password) {
@@ -20,7 +21,9 @@ const Login = () => {
     }
 
     try {
-      const result = await api.login(email, password);
+      const result = isRegistering 
+        ? await api.register(email, password)
+        : await api.login(email, password);
       
       if (result.error) {
         toast.error(result.error);
@@ -28,12 +31,13 @@ const Login = () => {
       }
 
       localStorage.setItem("isLoggedIn", "true");
+      localStorage.setItem("userRole", "candidate");
       localStorage.setItem("user", JSON.stringify(result.user));
-      toast.success("Login successful!");
-      navigate("/dashboard");
+      toast.success(isRegistering ? "Registration successful!" : "Login successful!");
+      navigate("/"); // Navigate to candidate dashboard/landing
     } catch (error) {
-      toast.error("Login failed. Please try again.");
-      console.error("Login error:", error);
+      toast.error(isRegistering ? "Registration failed" : "Login failed");
+      console.error("Auth error:", error);
     }
   };
 
@@ -47,12 +51,17 @@ const Login = () => {
             </div>
           </div>
           
-          <h1 className="text-2xl font-bold text-center mb-2">Login as Recruiter</h1>
+          <h1 className="text-2xl font-bold text-center mb-2">
+            {isRegistering ? "Register as Candidate" : "Login as Candidate"}
+          </h1>
           <p className="text-center text-muted-foreground mb-8">
-            Enter your credentials to access the recruiter dashboard
+            {isRegistering 
+              ? "Create your account to start applying for jobs"
+              : "Enter your credentials to access your applications"
+            }
           </p>
           
-          <form onSubmit={handleLogin} className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
               <Input
@@ -78,27 +87,27 @@ const Login = () => {
             </div>
             
             <Button type="submit" className="w-full" size="lg">
-              Login
+              {isRegistering ? "Register" : "Login"}
             </Button>
           </form>
           
           <div className="mt-6 text-center space-y-2">
             <p className="text-sm text-muted-foreground">
-              Don't have an account?{" "}
+              {isRegistering ? "Already have an account?" : "Don't have an account?"}{" "}
               <button 
-                onClick={() => toast.info("Please contact your organization to create a recruiter account")}
+                onClick={() => setIsRegistering(!isRegistering)}
                 className="text-foreground underline hover:text-primary transition-colors"
               >
-                Register as Recruiter
+                {isRegistering ? "Login" : "Register"}
               </button>
             </p>
             <p className="text-sm text-muted-foreground">
-              Not a recruiter?{" "}
+              Are you a recruiter?{" "}
               <button 
-                onClick={() => navigate("/candidate-login")}
+                onClick={() => navigate("/login")}
                 className="text-foreground underline hover:text-primary transition-colors"
               >
-                Login as candidate
+                Login as recruiter
               </button>
             </p>
           </div>
@@ -108,4 +117,4 @@ const Login = () => {
   );
 };
 
-export default Login;
+export default CandidateLogin;
