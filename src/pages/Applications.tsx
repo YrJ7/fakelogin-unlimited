@@ -1,13 +1,32 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { mockApplications } from "@/data/mockData";
 import { Search, ArrowRight } from "lucide-react";
+import { api } from "@/services/api";
+import { toast } from "sonner";
 
 const Applications = () => {
   const [searchQuery, setSearchQuery] = useState("");
+  const [applications, setApplications] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    loadApplications();
+  }, []);
+
+  const loadApplications = async () => {
+    try {
+      const data = await api.getApplications();
+      setApplications(data);
+    } catch (error) {
+      toast.error("Failed to load applications");
+      console.error("Error loading applications:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <DashboardLayout>
@@ -52,7 +71,20 @@ const Applications = () => {
               </tr>
             </thead>
             <tbody>
-              {mockApplications.map((app) => (
+              {loading ? (
+                <tr>
+                  <td colSpan={7} className="p-8 text-center text-muted-foreground">
+                    Loading applications...
+                  </td>
+                </tr>
+              ) : applications.length === 0 ? (
+                <tr>
+                  <td colSpan={7} className="p-8 text-center text-muted-foreground">
+                    No applications found.
+                  </td>
+                </tr>
+              ) : (
+                applications.map((app) => (
                 <tr key={app.id} className="border-b border-border hover:bg-muted/30 transition-colors">
                   <td className="p-4">
                     <div>
@@ -101,7 +133,7 @@ const Applications = () => {
                     </Button>
                   </td>
                 </tr>
-              ))}
+              )))}
             </tbody>
           </table>
         </div>
